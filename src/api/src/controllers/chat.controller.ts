@@ -1,7 +1,7 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { createAzure } from '@ai-sdk/azure';
-import { streamText } from 'ai';
+import { smoothStream, streamText } from 'ai';
 import { ConfigService } from '@nestjs/config';
 
 @Controller('chat')
@@ -22,6 +22,7 @@ export class ChatController {
         model: azure('gpt-4'),
         system: 'You are a helpful assistant.',
         messages,
+        experimental_transform: smoothStream(),
       });
 
       result.pipeDataStreamToResponse(res);

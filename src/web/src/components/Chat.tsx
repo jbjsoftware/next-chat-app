@@ -1,15 +1,22 @@
 "use client";
 
 import { ChangeEvent, useRef, useState, useEffect } from "react";
-
 import ReactMarkdown from "react-markdown";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { Mic, Paperclip, SendHorizonal, Copy, ArrowDown } from "lucide-react";
-
 import { useChat } from "@ai-sdk/react";
+
+function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text).then(
+    () => {
+      console.log("Copied to clipboard successfully!");
+    },
+    (err) => {
+      console.error("Could not copy text: ", err);
+    }
+  );
+}
 
 export default function Chat() {
   const { messages, input, handleInputChange, handleSubmit, status } = useChat({
@@ -66,21 +73,20 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    const messageContainer = messageContainerRef.current;
-    if (messageContainer) {
-      messageContainer.addEventListener("scroll", handleScroll);
+    if (messageContainerRef.current) {
+      messageContainerRef.current.addEventListener("scroll", handleScroll);
       handleScroll(); // Initial check
     }
     return () => {
-      if (messageContainer) {
-        messageContainer.removeEventListener("scroll", handleScroll);
+      if (messageContainerRef.current) {
+        messageContainerRef.current.removeEventListener("scroll", handleScroll);
       }
     };
   }, [messages]);
 
   useEffect(() => {
     if ("webkitSpeechRecognition" in window) {
-      const speechRecognition = new window.webkitSpeechRecognition();
+      const speechRecognition = new (window as any).webkitSpeechRecognition();
       speechRecognition.continuous = false;
       speechRecognition.interimResults = false;
       speechRecognition.lang = "en-US";
@@ -147,11 +153,13 @@ export default function Chat() {
                       <ReactMarkdown className="flex-grow">
                         {message.content}
                       </ReactMarkdown>
-                      <CopyToClipboard text={message.content}>
-                        <Button variant="ghost" size="icon">
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </CopyToClipboard>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => copyToClipboard(message.content)}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
