@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: youracr.azurecr.io/chat-api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 3000
+
+namespace: default
+
+env:
+  AZURE_OPENAI_RESOURCE_NAME: ""
+  AZURE_OPENAI_API_KEY: ""
+  AZURE_OPENAI_DEPLOYMENT: ""

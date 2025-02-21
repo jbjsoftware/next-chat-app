@@ -4,8 +4,26 @@ import { ChangeEvent, useRef, useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "./ui/card";
-import { Mic, Paperclip, SendHorizonal, Copy, ArrowDown } from "lucide-react";
+import { Mic, Paperclip, SendHorizonal, ArrowDown, X } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
+import Markdown from "react-markdown";
+import MarkdownRenderer from "./MarkdownRenderer";
+
+interface FileChipProps {
+  file: File;
+  onRemove: () => void;
+}
+
+const FileChip: React.FC<FileChipProps> = ({ file, onRemove }) => {
+  return (
+    <div className="flex items-center space-x-2 bg-gray-200 rounded-full px-3 py-1">
+      <span className="text-sm text-gray-700">{file.name}</span>
+      <button onClick={onRemove} className="text-gray-500 hover:text-gray-700">
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text).then(
@@ -33,6 +51,52 @@ export default function Chat() {
       console.log("Received HTTP response from server:", response);
     },
   });
+
+  const [files, setFiles] = useState<FileList | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (event.target.files) {
+      setFiles(event.target.files);
+      //   const fileList = Array.from(event.target.files);
+
+      //   const processedFiles = await Promise.all(
+      //     fileList.map(async (file) => {
+      //       if (file.type.startsWith("image/") || file.type.startsWith("text/")) {
+      //         return file;
+      //       } else {
+      //         const base64Content = await convertToBase64(file);
+      //         return new File([base64Content], file.name, { type: file.type });
+      //       }
+      //     })
+      //   );
+
+      //   const dataTransfer = new DataTransfer();
+      //   processedFiles.forEach((file) => dataTransfer.items.add(file));
+      //   setFiles(dataTransfer.files);
+    }
+  };
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const removeFile = (index: number) => {
+    if (files) {
+      const fileArray = Array.from(files);
+      fileArray.splice(index, 1);
+      const dataTransfer = new DataTransfer();
+      fileArray.forEach((file) => dataTransfer.items.add(file));
+      setFiles(dataTransfer.files);
+    }
+  };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +150,7 @@ export default function Chat() {
 
   useEffect(() => {
     if ("webkitSpeechRecognition" in window) {
-      const speechRecognition = new (window as any).webkitSpeechRecognition();
+      const speechRecognition = new window.webkitSpeechRecognition();
       speechRecognition.continuous = false;
       speechRecognition.interimResults = false;
       speechRecognition.lang = "en-US";
@@ -121,14 +185,13 @@ export default function Chat() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col py-4 px-4">
-      {/* Message Container */}
+    <div className="w-full flex-fill flex flex-col py-4 px-4">
       <div
-        className="flex flex-col flex-grow min-h-64 overflow-auto pt-4"
+        className="flex flex-col flex-fill min-h-64 overflow-auto pt-4"
         ref={messageContainerRef}
       >
-        <div className="flex flex-col flex-grow w-full max-w-screen-lg mx-auto">
-          <div className="flex flex-col flex-grow gap-4">
+        <div className="flex flex-col flex-fill w-full max-w-screen-lg mx-auto">
+          <div className="flex flex-col flex-fill gap-8">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -136,40 +199,23 @@ export default function Chat() {
                   message.role === "user" ? "items-end" : "items-start"
                 }`}
               >
-                <div className="text-sm text-gray-700">
-                  {message.role === "user" ? "You" : "AI"}
-                </div>
-                <div
-                  className={`p-2 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-primary-500 text-gray-500"
-                      : "bg-card-foreground text-card"
-                  }`}
-                >
-                  {message.role === "user" ? (
-                    message.content
-                  ) : (
-                    <div className="flex items-start">
-                      <ReactMarkdown className="flex-grow">
-                        {message.content}
-                      </ReactMarkdown>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyToClipboard(message.content)}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                {message.role === "user" ? (
+                  <Card className="px-4 py-2 rounded-3xl">
+                    {message.content}
+                  </Card>
+                ) : (
+                  <div className="flex">
+                    <MarkdownRenderer content={message.content} />
+                    {/* <ReactMarkdown className="flex-grow">
+                      {message.content}
+                    </ReactMarkdown> */}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
-      {/* End Message Container */}
-      {/* Scroll to Bottom Button */}
       <div className="flex justify-center mb-2" style={{ height: "40px" }}>
         {canScrollDown && (
           <Button variant="ghost" size="icon" onClick={scrollToBottom}>
@@ -177,27 +223,67 @@ export default function Chat() {
           </Button>
         )}
       </div>
-      {/* Input Container */}
       <div className="w-full">
         <Card className="max-w-screen-lg mx-auto flex flex-col">
           <CardContent className="flex flex-col pb-0 mt-3">
+            {files && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {Array.from(files).map((file, index) => (
+                  <FileChip
+                    key={index}
+                    file={file}
+                    onRemove={() => removeFile(index)}
+                  />
+                ))}
+              </div>
+            )}
             <textarea
               ref={textareaRef}
-              className="w-full resize-none outline-none max-h-[150px] overflow-y-auto"
+              className="w-full resize-none outline-none max-h-[150px] overflow-y-auto bg-transparent"
               placeholder="Type a message..."
               value={input}
               onChange={handleChange}
               rows={1}
               disabled={status !== "ready"}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(
+                    e as unknown as React.FormEvent<HTMLFormElement>
+                  );
+                }
+              }}
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+              multiple
             />
           </CardContent>
           <CardFooter className="pb-3">
             <form
               className="flex justify-between items-center w-full"
-              onSubmit={handleSubmit}
+              onSubmit={(event) => {
+                handleSubmit(event, {
+                  experimental_attachments: files,
+                });
+
+                setFiles(undefined);
+
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
             >
               <div className="flex space-x-2">
-                <Button type="button" variant="ghost" size="icon">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <Paperclip />
                 </Button>
               </div>
@@ -223,7 +309,6 @@ export default function Chat() {
           </CardFooter>
         </Card>
       </div>
-      {/* End Input Container */}
     </div>
   );
 }

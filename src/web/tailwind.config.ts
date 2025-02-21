@@ -57,7 +57,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       flex: {
-        fill: "1 0 0%",
+        fill: "1 0 0px",
       },
     },
   },

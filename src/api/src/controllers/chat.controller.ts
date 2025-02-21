@@ -1,4 +1,4 @@
-import { Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { createAzure } from '@ai-sdk/azure';
 import { smoothStream, streamText } from 'ai';
@@ -9,9 +9,9 @@ export class ChatController {
   constructor(private configService: ConfigService) {}
 
   @Post()
-  post(@Req() req, @Res() res: Response) {
+  post(@Body() body, @Res() res: Response) {
     try {
-      const { messages } = req.body;
+      const { messages } = body;
 
       const azure = createAzure({
         resourceName: this.configService.get('AZURE_RESOURCE_NAME'), // Azure resource name
@@ -25,7 +25,22 @@ export class ChatController {
         experimental_transform: smoothStream(),
       });
 
-      result.pipeDataStreamToResponse(res);
+      result.pipeDataStreamToResponse(res, {
+        getErrorMessage: (error) => {
+          if (error == null) {
+            return 'unknown error';
+          }
+
+          if (typeof error === 'string') {
+            return error;
+          }
+
+          if (error instanceof Error) {
+            return error.message;
+          }
+          return JSON.stringify(error);
+        },
+      });
     } catch (error) {
       console.log(error);
       if (error instanceof Error) {
