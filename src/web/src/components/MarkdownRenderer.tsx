@@ -1,13 +1,19 @@
-import { CheckSquare, Copy } from "lucide-react";
+import { CheckSquare, Copy, CopyCheck } from "lucide-react";
 import React from "react";
 import rehypeRaw from "rehype-raw";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import {
+  dracula,
+  coy,
+  materialLight,
+  materialDark,
+} from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { useTheme } from "next-themes";
 
 function CodeCopyBtn({ children }: any) {
   const [copyOk, setCopyOk] = React.useState(false);
-  const icon = copyOk ? <CheckSquare /> : <Copy />;
+  const icon = copyOk ? <CopyCheck /> : <Copy />;
 
   const handleClick = (_e: any) => {
     navigator.clipboard.writeText(children);
@@ -18,7 +24,7 @@ function CodeCopyBtn({ children }: any) {
   };
   return (
     <button
-      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      className="absolute top-2 right-2 z-1 text-gray-900 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-700"
       onClick={handleClick}
     >
       {icon}
@@ -31,7 +37,10 @@ interface MarkdownRendererProps {
 }
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
-  const syntaxTheme = dracula;
+  // if them is dark, use dracula theme, else use materialLight
+  const { resolvedTheme } = useTheme();
+
+  const syntaxTheme = resolvedTheme === "dark" ? materialDark : materialLight;
 
   const Pre = ({ children, ...props }: any) => (
     <pre {...props} className="relative">
@@ -46,11 +55,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       return !inline && match ? (
         <SyntaxHighlighter
           {...props}
-          children={String(children).replace(/\n$/, "")}
           style={syntaxTheme}
           language={(match && match[1]) || "js"}
           PreTag="section"
-        />
+        >
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
       ) : (
         <code className={className} {...props}>
           {children}

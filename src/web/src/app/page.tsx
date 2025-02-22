@@ -18,7 +18,7 @@ export default function Home() {
         </div>
 
         <Avatar>
-          <AvatarFallback className="bg-slate-800 text-white">
+          <AvatarFallback className="bg-slate-700 text-white p-1">
             <User />
           </AvatarFallback>
         </Avatar>
