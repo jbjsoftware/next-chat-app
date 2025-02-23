@@ -35,13 +35,9 @@ const FileChip: React.FC<FileChipProps> = ({ file, onRemove }) => {
 };
 
 export default function Chat() {
-  const { messages, status, reload, error } = useChat({
+  const { messages, status } = useChat({
     id: "chat",
     api: process.env.NEXT_PUBLIC_CHAT_API_URL,
-    onError: (apiError) => {
-      console.log("An error occurred:", apiError);
-      toast.error(`An error occured: ${apiError.message}`);
-    },
   });
 
   const statusRef = useRef(status);
@@ -100,15 +96,33 @@ export default function Chat() {
   };
 
   useEffect(() => {
-    if (messageContainerRef.current) {
-      messageContainerRef.current.addEventListener("scroll", handleScroll);
+    const messageContainer = messageContainerRef.current;
+    if (messageContainer) {
+      messageContainer.addEventListener("scroll", handleScroll);
       handleScroll(); // Initial check
     }
     return () => {
-      if (messageContainerRef.current) {
-        messageContainerRef.current.removeEventListener("scroll", handleScroll);
+      if (messageContainer) {
+        messageContainer.removeEventListener("scroll", handleScroll);
       }
     };
+  }, [messages]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // messageContainerRef.current?.scrollTo({
+    //   bottom: messagesEndRef.current?.offsetTop,
+    //   behavior: "smooth",
+    // });
+    if (statusRef.current === "submitted") {
+      // scroll the messagesEndRef into view using the messagesContainerRef
+      messageContainerRef.current?.scrollTo({
+        top: messagesEndRef.current?.offsetTop,
+        behavior: "smooth",
+      });
+    }
+    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
@@ -132,27 +146,17 @@ export default function Chat() {
                     {message.content}
                   </Card>
                 ) : (
-                  <div className="flex">
-                    <MarkdownRenderer content={message.content} />
-                  </div>
+                  // <div className="flex">
+                  <MarkdownRenderer content={message.content} />
+                  // </div>
                 )}
               </div>
             ))}
           </div>
         </div>
+        <div ref={messagesEndRef} />
       </div>
-      {error && (
-        <div className="flex justify-end">
-          <Card className="my-2 bg-red-600">
-            <CardContent className="flex items-center justify-end gap-3 py-2">
-              <div> An error occurred</div>
-              <Button type="button" onClick={() => reload()}>
-                Retry <RefreshCcw />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+
       <div className="mb-2 flex justify-center" style={{ height: "40px" }}>
         {canScrollDown && !isScrolling && (
           <Button variant="ghost" size="icon" onClick={scrollToBottom}>
@@ -166,12 +170,29 @@ export default function Chat() {
 }
 
 const MessageContainer = () => {
-  const { input, handleInputChange, handleSubmit, stop, status } = useChat({
+  const {
+    input,
+    handleInputChange,
+    handleSubmit,
+    stop,
+    status,
+    reload,
+    error,
+  } = useChat({
     id: "chat",
     api: process.env.NEXT_PUBLIC_CHAT_API_URL,
     onError: (apiError) => {
       console.log("An error occurred:", apiError);
-      toast.error(`An error occured: ${apiError.message}`);
+      toast(`An error occured`, {
+        description: JSON.parse(error?.message ?? '{ message: "" }')?.message,
+        duration: Infinity,
+        action: {
+          label: "Retry",
+          onClick: () => {
+            reload();
+          },
+        },
+      });
     },
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -259,7 +280,7 @@ const MessageContainer = () => {
 
   return (
     <div className="w-full">
-      <Card className="mx-auto flex max-w-screen-lg flex-col">
+      <Card className="flex-fill mx-auto flex w-full max-w-screen-lg">
         <CardContent className="mt-3 flex flex-col pb-0">
           {files && (
             <div className="mb-4 flex flex-wrap gap-2">
@@ -272,6 +293,18 @@ const MessageContainer = () => {
               ))}
             </div>
           )}
+          {/* {error && (
+          <div className="flex justify-end">
+            <Card className="my-2 bg-red-600">
+              <CardContent className="flex items-center justify-end gap-3 py-2">
+                <div> An error occurred</div>
+                <Button type="button" onClick={() => reload()}>
+                  Retry <RefreshCcw />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          )} */}
           <textarea
             ref={textareaRef}
             className="max-h-[150px] w-full resize-none overflow-y-auto bg-transparent outline-none"
@@ -279,7 +312,7 @@ const MessageContainer = () => {
             value={input}
             onChange={handleChange}
             rows={1}
-            disabled={status !== "ready"}
+            disabled={status !== "ready" && status !== "error"}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -319,6 +352,7 @@ const MessageContainer = () => {
               >
                 <Paperclip />
               </Button>
+              <span>{status}</span>
             </div>
             {status !== "streaming" && (
               <div className="flex space-x-2">

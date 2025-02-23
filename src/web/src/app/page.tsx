@@ -1,15 +1,15 @@
-import Chat from "@/components/Chat";
+import ChatContainer from "@/components/chat/ChatContainer";
 import { ModeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BrainCog, User } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen w-full flex flex-col">
-      <div className="flex items-center px-4 py-2 gap-2">
+    <main className="flex min-h-screen w-full flex-col">
+      <div className="flex items-center gap-2 px-4 py-2">
         <BrainCog />
 
-        <h1 className="text-2xl font-bold hidden md:block">Chat</h1>
+        <h1 className="hidden text-2xl font-bold md:block">Chat</h1>
 
         <div className="flex-fill"></div>
 
@@ -17,13 +17,13 @@ export default function Home() {
           <ModeToggle />
         </div>
 
-        <Avatar>
-          <AvatarFallback className="bg-slate-700 text-white p-1">
+        <Avatar className="cursor-pointer">
+          <AvatarFallback className="bg-slate-700 text-white">
             <User />
           </AvatarFallback>
         </Avatar>
       </div>
-      <Chat />
+      <ChatContainer />
     </main>
   );
 }

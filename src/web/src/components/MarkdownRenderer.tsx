@@ -1,30 +1,33 @@
-import { CheckSquare, Copy, CopyCheck } from "lucide-react";
+import { Copy, CopyCheck } from "lucide-react";
 import React from "react";
 import rehypeRaw from "rehype-raw";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
-  dracula,
-  coy,
   materialLight,
   materialDark,
 } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 function CodeCopyBtn({ children }: any) {
   const [copyOk, setCopyOk] = React.useState(false);
   const icon = copyOk ? <CopyCheck /> : <Copy />;
 
-  const handleClick = (_e: any) => {
+  const handleClick = () => {
     navigator.clipboard.writeText(children);
     setCopyOk(true);
+    toast.success("Copied to clipboard", {
+      duration: 500,
+    });
+
     setTimeout(() => {
       setCopyOk(false);
     }, 500);
   };
   return (
     <button
-      className="absolute top-2 right-2 z-1 text-gray-900 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-700"
+      className="absolute top-2 right-2 z-1 cursor-pointer text-gray-900 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-700"
       onClick={handleClick}
     >
       {icon}
@@ -50,7 +53,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   );
   const MarkdownComponents: object = {
     pre: Pre,
-    code({ node, inline, className, children, ...props }: any) {
+    code({ inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
         <SyntaxHighlighter
@@ -58,6 +61,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           style={syntaxTheme}
           language={(match && match[1]) || "js"}
           PreTag="section"
+          wrapLines={true}
+          wrapLongLines={true}
         >
           {String(children).replace(/\n$/, "")}
         </SyntaxHighlighter>
