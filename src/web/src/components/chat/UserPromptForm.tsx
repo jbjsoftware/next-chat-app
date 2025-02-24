@@ -3,6 +3,40 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
 
+const SubmitButton = ({ status }: { status: string }) => {
+  return (
+    <div className="flex space-x-2">
+      <Button
+        className="h-10 w-10 cursor-pointer rounded-full"
+        type="submit"
+        variant="outline"
+        disabled={status == "submitted"}
+      >
+        {status == "submitted" ? (
+          <LoaderCircle className="animate-spin" />
+        ) : (
+          <ArrowUp />
+        )}
+      </Button>
+    </div>
+  );
+};
+
+const StopButton = ({ stop }: { stop: () => void }) => {
+  return (
+    <div className="flex space-x-2">
+      <Button
+        onClick={stop}
+        className="h-10 w-10 cursor-pointer rounded-full"
+        type="button"
+        variant="outline"
+      >
+        <StopCircle />
+      </Button>
+    </div>
+  );
+};
+
 export type UserPromptFormProps = {
   input: string;
   handleSubmit: (
@@ -52,33 +86,10 @@ const UserPromptForm = ({
         </CardContent>
         <CardFooter className="flex justify-between pb-3">
           <div className="flex space-x-2"></div>
-          {status !== "streaming" && (
-            <div className="flex space-x-2">
-              <Button
-                className="h-10 w-10 cursor-pointer rounded-full"
-                type="submit"
-                variant="outline"
-                disabled={status == "submitted"}
-              >
-                {status == "submitted" ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <ArrowUp />
-                )}
-              </Button>
-            </div>
-          )}
-          {status === "streaming" && (
-            <div className="flex space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => stop()}
-              >
-                <StopCircle />
-              </Button>
-            </div>
+          {status === "streaming" ? (
+            <StopButton stop={stop} />
+          ) : (
+            <SubmitButton status={status} />
           )}
         </CardFooter>
       </Card>

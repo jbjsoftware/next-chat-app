@@ -49,8 +49,6 @@ export default function ChatContainer() {
         <MessageList messages={chatProps.messages} />
       </MessagesContainer>
 
-      {/* Chat Input */}
-
       <div className="mx-auto w-full max-w-screen-lg">
         <UserPromptForm
           input={chatProps.input}

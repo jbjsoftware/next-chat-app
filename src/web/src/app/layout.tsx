@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
+          <main className="flex min-h-screen w-full flex-col">{children}</main>
         </ThemeProvider>
         <Toaster closeButton />
       </body>
