@@ -1,5 +1,5 @@
 import React from "react";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
+import MarkdownRenderer from "@/components/markdown-renderer";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -8,11 +8,13 @@ export type MessageListProps = {
 };
 
 const UserMessage = ({ content }: { content: string }) => (
-  <Card className="rounded-3xl rounded-br-none px-4 py-2">{content}</Card>
+  <Card className="ml-4 rounded-3xl rounded-br-xs px-4 py-2 md:ml-64">
+    {content}
+  </Card>
 );
 
 const AssistantMessage = ({ content }: { content: string }) => (
-  <MarkdownRenderer content={content} />
+  <MarkdownRenderer>{content}</MarkdownRenderer>
 );
 
 const MessageList = ({ messages }: MessageListProps) => {

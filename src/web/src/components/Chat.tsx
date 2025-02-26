@@ -7,7 +7,6 @@ import {
   SendHorizonal,
   ArrowDown,
   X,
-  RefreshCcw,
   StopCircle,
   LoaderCircle,
 } from "lucide-react";
@@ -15,7 +14,7 @@ import { useChat } from "@ai-sdk/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import MarkdownRenderer from "./MarkdownRenderer";
+import MarkdownRenderer from "./markdown-renderer";
 import { toast } from "sonner";
 
 interface FileChipProps {
@@ -147,7 +146,7 @@ export default function Chat() {
                   </Card>
                 ) : (
                   // <div className="flex">
-                  <MarkdownRenderer content={message.content} />
+                  <MarkdownRenderer>{message.content}</MarkdownRenderer>
                   // </div>
                 )}
               </div>

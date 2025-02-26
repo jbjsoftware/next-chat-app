@@ -1,7 +1,12 @@
-import { ArrowUp, LoaderCircle, StopCircle } from "lucide-react";
+"use client";
+import { ArrowUp, LoaderCircle, Square } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { addMessageToChat, getChat } from "@/lib/db";
+import { useChatContext } from "@/contexts/chat-context";
+import { useRouter } from "next/navigation";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const SubmitButton = ({ status }: { status: string }) => {
   return (
@@ -25,14 +30,19 @@ const SubmitButton = ({ status }: { status: string }) => {
 const StopButton = ({ stop }: { stop: () => void }) => {
   return (
     <div className="flex space-x-2">
-      <Button
-        onClick={stop}
-        className="h-10 w-10 cursor-pointer rounded-full"
-        type="button"
-        variant="outline"
-      >
-        <StopCircle />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={stop}
+            className="h-10 w-10 cursor-pointer rounded-full"
+            type="button"
+            variant="default"
+          >
+            <Square className="bg-secondary text-secondary" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Stop</TooltipContent>
+      </Tooltip>
     </div>
   );
 };
@@ -46,6 +56,7 @@ export type UserPromptFormProps = {
   status: string;
   stop: () => void;
   handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  chatId: string;
 };
 
 const UserPromptForm = ({
@@ -54,13 +65,35 @@ const UserPromptForm = ({
   status,
   stop,
   handleChange,
+  chatId,
 }: UserPromptFormProps) => {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  const router = useRouter();
+
+  const { saveNewChat } = useChatContext();
+
+  const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
+    const chat = await getChat(chatId);
+
+    if (!chat) {
+      await saveNewChat(chatId, input);
+      router.push(`/chat/${chatId}`);
+    }
+
+    await addMessageToChat(chatId, {
+      content: input,
+      role: "user",
+    });
+
+    handleSubmit(event);
+  };
+
   return (
     <form
       className="mx-auto flex w-full items-center"
       onSubmit={(event) => {
-        handleSubmit(event);
+        submitForm(event);
       }}
       onClick={() => {
         textareaRef.current?.focus();
@@ -79,7 +112,7 @@ const UserPromptForm = ({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                submitForm(e as unknown as React.FormEvent<HTMLFormElement>);
               }
             }}
           />
