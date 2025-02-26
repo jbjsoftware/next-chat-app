@@ -84,7 +84,7 @@ export default function ScrollToBottomButton({
     <>
       {canScrollDown && !isScrolling && (
         <Button
-          variant="outline"
+          variant="secondary"
           size="icon"
           className="rounded-full"
           onClick={scrollToBottom}

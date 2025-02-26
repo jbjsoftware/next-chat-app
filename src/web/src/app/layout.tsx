@@ -35,7 +35,7 @@ export default function RootLayout({
               {children}
             </main>
           </ThemeProvider>
-          <Toaster closeButton />
+          <Toaster position="bottom-center" closeButton />
         </SessionProvider>
       </body>
     </html>

@@ -10,10 +10,10 @@ import {
 } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { Button } from "./ui/button";
 
 function CodeCopyBtn({ children }: any) {
   const [copyOk, setCopyOk] = React.useState(false);
-  const icon = copyOk ? <CopyCheck /> : <Copy />;
 
   const handleClick = () => {
     navigator.clipboard.writeText(children);
@@ -27,12 +27,24 @@ function CodeCopyBtn({ children }: any) {
     }, 500);
   };
   return (
-    <button
-      className="z-1 cursor-pointer text-gray-900 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-700"
+    <Button
+      variant="outline"
+      className="z-1 flex cursor-pointer gap-2"
       onClick={handleClick}
+      size="sm"
     >
-      {icon}
-    </button>
+      {copyOk ? (
+        <>
+          <CopyCheck />
+          <span>Copied</span>
+        </>
+      ) : (
+        <>
+          <Copy />
+          <span>Copy</span>
+        </>
+      )}
+    </Button>
   );
 }
 
@@ -57,9 +69,9 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         customStyle={{
           margin: "0",
           padding: "0.8rem",
-          borderBottomLeftRadius: "0.25rem",
-          borderBottomRightRadius: "0.25rem",
-          fontSize: "0.875rem",
+          borderBottomLeftRadius: ".8rem",
+          borderBottomRightRadius: ".8rem",
+          fontSize: "0.85rem",
         }}
       >
         {String(children).replace(/\n$/, "")}
@@ -74,15 +86,16 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const pre = ({ node, children, ...props }: any) => {
     return (
       <pre {...props} className="relative">
-        <div className="my-4 rounded border">
-          <header className="flex items-center justify-between rounded-sm rounded-b-none p-2">
-            <span className="text-xs text-muted-foreground">
-              {node.children[0].properties?.className[0]?.replace(
-                "language-",
-                "",
-              )}
+        <div className="relative my-6 rounded-2xl border-2">
+          <header className="flex items-center justify-between border-b p-2">
+            <span className="ps-1 text-xs text-muted-foreground">
+              {node.children[0].properties?.className &&
+                node.children[0].properties?.className[0]?.replace(
+                  "language-",
+                  "",
+                )}
             </span>
-            <CodeCopyBtn>{children}</CodeCopyBtn>
+            <CodeCopyBtn>{children?.props?.children}</CodeCopyBtn>
           </header>
           {children}
         </div>

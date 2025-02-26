@@ -129,3 +129,7 @@
 .flex-fill {
   flex: 1 0 0px;
 }
+
+button {
+  @apply cursor-pointer;
+}

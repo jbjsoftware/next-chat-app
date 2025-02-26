@@ -63,6 +63,7 @@ export default function ChatContainer({
     status,
     reload,
     handleSubmit,
+    error,
   } = useChat({
     id: id,
     api: process.env.NEXT_PUBLIC_CHAT_API_URL,
@@ -75,6 +76,18 @@ export default function ChatContainer({
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  //when a new message from the user is added, scroll to the bottom
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      if (messages[messages.length - 1]?.role === "user") {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: "auto",
+        });
+      }
+    }
+  }, [messages]);
+
   return (
     <>
       <ChatHeader selectedModelId={"gpt-4o"} />
@@ -85,12 +98,27 @@ export default function ChatContainer({
         </MessagesContainer>
 
         <div className="mx-auto w-full max-w-screen-lg">
-          <div className="mb-2 flex justify-center" style={{ height: "40px" }}>
-            <ScrollToBottomButton
-              status={status}
-              messages={messages}
-              scrollContainerRef={scrollContainerRef}
-            />
+          <div className="flex-fill flex w-full items-center">
+            <div>
+              {status === "streaming" && (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500"></div>
+                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-200"></div>
+                  <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-400"></div>
+                </div>
+              )}
+            </div>
+
+            <div
+              className="flex-fill flex justify-end"
+              style={{ height: "40px" }}
+            >
+              <ScrollToBottomButton
+                status={status}
+                messages={messages}
+                scrollContainerRef={scrollContainerRef}
+              />
+            </div>
           </div>
           <UserPromptForm
             input={input}
@@ -99,6 +127,8 @@ export default function ChatContainer({
             stop={stop}
             handleChange={handleInputChange}
             chatId={id}
+            error={error}
+            reload={reload}
           />
         </div>
       </div>

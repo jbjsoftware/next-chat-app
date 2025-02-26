@@ -1,5 +1,5 @@
 "use client";
-import { ArrowUp, LoaderCircle, Square } from "lucide-react";
+import { ArrowUp, LoaderCircle, RefreshCcw, Square } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
@@ -7,6 +7,8 @@ import { addMessageToChat, getChat } from "@/lib/db";
 import { useChatContext } from "@/contexts/chat-context";
 import { useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { ChatRequestOptions } from "ai";
+import { AutosizeTextarea, AutosizeTextAreaRef } from "../ui/autosize-textarea";
 
 const SubmitButton = ({ status }: { status: string }) => {
   return (
@@ -57,6 +59,10 @@ export type UserPromptFormProps = {
   stop: () => void;
   handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   chatId: string;
+  error: Error | undefined;
+  reload: (
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
 };
 
 const UserPromptForm = ({
@@ -66,8 +72,10 @@ const UserPromptForm = ({
   stop,
   handleChange,
   chatId,
+  error,
+  reload,
 }: UserPromptFormProps) => {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const textareaRef = React.useRef<AutosizeTextAreaRef>(null);
 
   const router = useRouter();
 
@@ -96,15 +104,17 @@ const UserPromptForm = ({
         submitForm(event);
       }}
       onClick={() => {
-        textareaRef.current?.focus();
+        textareaRef.current?.textArea?.focus();
       }}
     >
-      <Card className="flex-fill flex w-full hover:border-card-foreground">
+      <Card className="flex-fill flex w-full cursor-text gap-2 hover:border-card-foreground">
         <CardContent className="mt-3 flex flex-col pb-0">
-          <textarea
+          <AutosizeTextarea
             ref={textareaRef}
-            className="max-h-[150px] w-full resize-none overflow-y-auto bg-transparent outline-none"
+            className="w-full resize-none overflow-y-auto border-0 bg-transparent ring-offset-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
             placeholder="Type a message..."
+            maxHeight={200}
+            minHeight={20}
             value={input}
             onChange={handleChange}
             rows={1}
@@ -119,6 +129,20 @@ const UserPromptForm = ({
         </CardContent>
         <CardFooter className="flex justify-between pb-3">
           <div className="flex space-x-2"></div>
+
+          {error && (
+            <div className="flex justify-end">
+              <Card className="bg-red-600 text-white">
+                <CardContent className="flex items-center justify-end gap-3 py-1">
+                  <div> An error occurred</div>
+                  <Button type="button" onClick={() => reload()} size="sm">
+                    Retry <RefreshCcw />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {status === "streaming" ? (
             <StopButton stop={stop} />
           ) : (

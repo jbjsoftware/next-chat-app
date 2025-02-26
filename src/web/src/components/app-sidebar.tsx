@@ -46,13 +46,13 @@ export default function AppSidebar() {
           <ChatHistory />
         </div>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t p-2">
         {!session?.user && (
           <div className="mb-2">
             <SignIn />
           </div>
         )}
-        {session?.user && <SidebarUserNav user={session.user} />}
+        {session?.user && <SidebarUserNav />}
       </SidebarFooter>
     </Sidebar>
   );
