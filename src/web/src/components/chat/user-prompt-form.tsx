@@ -1,14 +1,16 @@
 "use client";
+
+import React, { ChangeEvent } from "react";
 import { ArrowUp, LoaderCircle, RefreshCcw, Square } from "lucide-react";
-import React from "react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter } from "../ui/card";
+import { useRouter } from "next/navigation";
+
 import { addMessageToChat, getChat } from "@/lib/db";
 import { useChatContext } from "@/contexts/chat-context";
-import { useRouter } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { ChatRequestOptions } from "ai";
-import { AutosizeTextarea, AutosizeTextAreaRef } from "../ui/autosize-textarea";
+import { useChatHistoryContext } from "@/contexts/chat-history-context";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { AutosizeTextarea, AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
 
 const SubmitButton = ({ status }: { status: string }) => {
   return (
@@ -40,42 +42,23 @@ const StopButton = ({ stop }: { stop: () => void }) => {
   );
 };
 
-export type UserPromptFormProps = {
-  input: string;
-  handleSubmit: (event: React.FormEvent<HTMLFormElement>, options?: any) => void;
-  status: string;
-  stop: () => void;
-  handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  chatId: string;
-  error: Error | undefined;
-  reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
-};
-
-const UserPromptForm = ({
-  input,
-  handleSubmit,
-  status,
-  stop,
-  handleChange,
-  chatId,
-  error,
-  reload,
-}: UserPromptFormProps) => {
+const UserPromptForm = () => {
   const textareaRef = React.useRef<AutosizeTextAreaRef>(null);
+  const { input, handleInputChange, stop, status, reload, handleSubmit, error, id } = useChatContext();
 
   const router = useRouter();
 
-  const { saveNewChat } = useChatContext();
+  const { saveNewChat } = useChatHistoryContext();
 
   const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
-    const chat = await getChat(chatId);
+    const chat = await getChat(id);
 
     if (!chat) {
-      await saveNewChat(chatId, input);
-      router.push(`/chat/${chatId}`);
+      await saveNewChat(id, input);
+      router.push(`/chat/${id}`);
     }
 
-    await addMessageToChat(chatId, {
+    await addMessageToChat(id, {
       content: input,
       role: "user",
     });
@@ -102,7 +85,7 @@ const UserPromptForm = ({
             maxHeight={200}
             minHeight={20}
             value={input}
-            onChange={handleChange}
+            onChange={handleInputChange as unknown as (e: ChangeEvent<HTMLTextAreaElement>) => void}
             rows={1}
             disabled={status !== "ready" && status !== "error"}
             onKeyDown={(e) => {

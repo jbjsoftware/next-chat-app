@@ -1,22 +1,12 @@
+import { Message } from "ai";
 import { openDB, type DBSchema } from "idb";
 import { nanoid } from "nanoid";
-
-export type ChatMessage = {
-  id: string;
-  role: "user" | "data" | "assistant" | "system";
-  content: string;
-  experimental_attachments?: Array<{
-    name?: string;
-    contentType?: string;
-    url: string;
-  }>;
-};
 
 export type Chat = {
   id: string;
   title: string;
   createdAt: number;
-  messages: ChatMessage[];
+  messages: Message[];
 };
 
 interface ChatDB extends DBSchema {
@@ -75,11 +65,11 @@ export async function listChats(): Promise<Chat[]> {
   return db.getAllFromIndex("chats", "by-created");
 }
 
-export async function addMessageToChat(chatId: string, message: Omit<ChatMessage, "id">): Promise<void> {
+export async function addMessageToChat(chatId: string, message: Omit<Message, "id">): Promise<void> {
   const chat = await getChat(chatId);
   if (!chat) throw new Error("Chat not found");
 
-  const newMessage: ChatMessage = {
+  const newMessage: Message = {
     ...message,
     id: nanoid(),
   };

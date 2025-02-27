@@ -1,82 +1,129 @@
 "use client";
 
-import type React from "react";
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { type Chat, createChat, listChats, deleteChat } from "@/lib/db";
-import { generateTitle } from "@/lib/utils";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { ChatRequestOptions, Message } from "@ai-sdk/ui-utils";
+import { toast } from "sonner";
+import { addMessageToChat, getChat } from "@/lib/db";
+import { useParams, useRouter } from "next/navigation";
+import { useChatHistoryContext } from "./chat-history-context";
 
-type ChatContextType = {
-  chats: Chat[];
-  currentChat?: Chat;
-  setCurrentChat: (chat: Chat | undefined) => void;
-  createNewChat: () => void;
-  deleteCurrentChat: () => Promise<void>;
-  refreshChats: () => Promise<void>;
-  saveNewChat: (id: string, firstMessage: string) => Promise<Chat>;
-  deleteChatById: (id: string) => Promise<void>;
-};
+interface ChatContextProps {
+  id: string;
+  selectedChatModel: string;
+  messages: Message[];
+  updateMessage: (messageId: string, content: string) => Promise<void>;
+  setMessages: (messages: Message[] | ((messages: Message[]) => Message[])) => void;
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  stop: () => void;
+  status: "streaming" | "error" | "submitted" | "ready";
+  reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  error: Error | undefined;
+}
 
-const ChatContext = createContext<ChatContextType | null>(null);
+const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChat, setCurrentChat] = useState<Chat>();
+export const ChatContextProvider: React.FC<{ id: string; selectedChatModel: string; children: React.ReactNode }> = ({
+  id,
+  selectedChatModel,
+  children,
+}) => {
+  const { updateChatById } = useChatHistoryContext();
 
-  const refreshChats = useCallback(async () => {
-    const allChats = await listChats();
-    setChats(allChats.sort((a, b) => b.createdAt - a.createdAt));
-  }, []);
+  const [initialMessages, setInitialMessages] = useState<Message[] | undefined>(undefined);
+  const { id: chatIdParam } = useParams();
+  const router = useRouter();
 
-  const createNewChat = () => {
-    // Just set current chat to undefined to start a new temporary chat
-    setCurrentChat(undefined);
-  };
+  const { messages, setMessages, input, handleInputChange, stop, status, reload, handleSubmit, error } = useChat({
+    id: id,
+    body: { id, selectedChatModel: selectedChatModel },
+    initialMessages,
+    onError: (apiError) => apiErrorHandler(apiError),
+    onFinish: async (message) => {
+      await addMessageToChat(id, message);
+    },
+  });
 
-  const saveNewChat = async (id: string, firstMessage: string) => {
-    const title = await generateTitle(firstMessage);
-    const chat = await createChat(id, title);
-    await refreshChats();
-    setCurrentChat(chat);
-    return chat;
-  };
+  const updateMessage = async (messageId: string, content: string) => {
+    const index = messages.findIndex((m) => m.id === messageId);
 
-  const deleteCurrentChat = async () => {
-    if (currentChat?.id) {
-      await deleteChat(currentChat.id);
-      setCurrentChat(undefined);
-      await refreshChats();
+    if (index !== -1) {
+      const updatedMessage = {
+        ...messages[index],
+        content: content,
+      };
+
+      const updatedMessages = [...messages.slice(0, index), updatedMessage];
+
+      await updateChatById(id, { messages: updatedMessages });
+
+      setMessages(updatedMessages);
     }
   };
 
-  const deleteChatById = async (id: string) => {
-    await deleteChat(id);
-    await refreshChats();
-  };
-
   useEffect(() => {
-    refreshChats();
-  }, [refreshChats]);
+    async function fetchSavedMessages() {
+      const chat = await getChat(id as string);
+      if (chatIdParam && ((chatIdParam && !chat) || chatIdParam !== id)) {
+        router.push("/");
+        return;
+      }
+      setInitialMessages(chat?.messages);
+    }
+
+    fetchSavedMessages();
+  }, [id, router, chatIdParam]);
 
   return (
     <ChatContext.Provider
       value={{
-        chats,
-        currentChat,
-        setCurrentChat,
-        createNewChat,
-        deleteCurrentChat,
-        refreshChats,
-        saveNewChat,
-        deleteChatById,
+        id,
+        selectedChatModel,
+        messages,
+        setMessages,
+        updateMessage,
+        input,
+        handleInputChange,
+        stop,
+        status,
+        reload,
+        handleSubmit,
+        error,
       }}
     >
       {children}
     </ChatContext.Provider>
   );
-}
+};
 
-export function useChatContext() {
+export const useChatContext = () => {
   const context = useContext(ChatContext);
-  if (!context) throw new Error("useChatContext must be used within a ChatProvider");
+  if (!context) {
+    throw new Error("useChatContext must be used within a ChatProvider");
+  }
   return context;
-}
+};
+
+const apiErrorHandler = (apiError: Error) => {
+  console.log("An error occurred:", apiError);
+  const errorMessage = () => {
+    try {
+      return JSON.parse(apiError?.message ?? '{ message: "" }').message;
+    } catch {
+      return apiError?.message || "An unknown error occurred";
+    }
+  };
+
+  toast(`An error occured`, {
+    description: errorMessage(),
+    // duration: Infinity,
+    // action: {
+    //   label: "Retry",
+    //   onClick: () => {
+    //     reload();
+    //   },
+    // },
+  });
+};

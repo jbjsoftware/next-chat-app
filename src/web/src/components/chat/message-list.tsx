@@ -1,15 +1,14 @@
 import React from "react";
+import { Message } from "ai";
+import { AnimatePresence, motion } from "framer-motion";
+
 import MarkdownRenderer from "@/components/markdown-renderer";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import MessageUser from "./message-user";
 
 export type MessageListProps = {
-  messages: any[];
+  messages: Message[];
 };
-
-const UserMessage = ({ content }: { content: string }) => (
-  <Card className="ml-4 rounded-3xl rounded-br-xs px-4 py-2 md:ml-64">{content}</Card>
-);
 
 const AssistantMessage = ({ content }: { content: string }) => <MarkdownRenderer>{content}</MarkdownRenderer>;
 
@@ -17,16 +16,25 @@ const MessageList = ({ messages }: MessageListProps) => {
   return (
     <div className="flex-fill flex flex-col gap-8">
       {messages.map((message) => (
-        <div
-          key={message.id}
-          className={cn(`flex flex-col gap-2`, message.role === "user" ? "items-end" : "items-start")}
-        >
-          {message.role === "user" ? (
-            <UserMessage content={message.content} />
-          ) : (
-            <AssistantMessage content={message.content} />
-          )}
-        </div>
+        <AnimatePresence key={message.id}>
+          <motion.div
+            className="group/message w-full"
+            initial={{ y: 5, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            data-role={message.role}
+          >
+            <div
+              key={message.id}
+              className={cn(`flex flex-col gap-2`, message.role === "user" ? "items-end" : "items-start")}
+            >
+              {message.role === "user" ? (
+                <MessageUser message={message} />
+              ) : (
+                <AssistantMessage content={message.content} />
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       ))}
     </div>
   );

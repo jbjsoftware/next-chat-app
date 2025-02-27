@@ -1,15 +1,11 @@
 "use client";
 import React, { useEffect, useRef } from "react";
-import { useChat } from "@ai-sdk/react";
-import { ChatRequestOptions, Message } from "@ai-sdk/ui-utils";
 
-import { toast } from "sonner";
+import { useChatContext } from "@/contexts/chat-context";
+import UserPromptForm from "@/components/chat/user-prompt-form";
+import { ChatHeader } from "@/components/chat/chat-header";
+import ScrollToBottomButton from "@/components/chat/scroll-to-bottom";
 import MessageList from "@/components/chat/message-list";
-import UserPromptForm from "./user-prompt-form";
-import { ChatHeader } from "./chat-header";
-import { addMessageToChat, getChat } from "@/lib/db";
-import ScrollToBottomButton from "./scroll-to-bottom";
-import { useParams, useRouter } from "next/navigation";
 
 export const MessagesContainer = ({
   scrollContainerRef,
@@ -25,67 +21,10 @@ export const MessagesContainer = ({
   );
 };
 
-const apiErrorHandler = (
-  apiError: Error,
-  reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>,
-) => {
-  console.log("An error occurred:", apiError);
-  const errorMessage = () => {
-    try {
-      return JSON.parse(apiError?.message ?? '{ message: "" }').message;
-    } catch {
-      return apiError?.message || "An unknown error occurred";
-    }
-  };
-
-  toast(`An error occured`, {
-    description: errorMessage(),
-    duration: Infinity,
-    action: {
-      label: "Retry",
-      onClick: () => {
-        reload();
-      },
-    },
-  });
-};
-
-export default function ChatContainer({
-  id,
-  selectedChatModel,
-}: {
-  id: string;
-  initialMessages?: Message[] | undefined;
-  selectedChatModel: string;
-}) {
-  const [initialMessages, setInitialMessages] = React.useState<Message[] | undefined>(undefined);
-
+export default function ChatContainer() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { id: chatIdParam } = useParams();
-  const router = useRouter();
 
-  const { messages, input, handleInputChange, stop, status, reload, handleSubmit, error } = useChat({
-    id: id,
-    body: { id, selectedChatModel: selectedChatModel },
-    initialMessages,
-    onError: (apiError) => apiErrorHandler(apiError, reload),
-    onFinish: async (message) => {
-      await addMessageToChat(id, message);
-    },
-  });
-
-  useEffect(() => {
-    async function fetchSavedMessages() {
-      const chat = await getChat(id as string);
-      if (chatIdParam && ((chatIdParam && !chat) || chatIdParam !== id)) {
-        router.push("/");
-        return;
-      }
-      setInitialMessages(chat?.messages);
-    }
-
-    fetchSavedMessages();
-  }, [id, router, chatIdParam]);
+  const { messages, status, selectedChatModel } = useChatContext();
 
   useEffect(() => {
     const scrollOnNewUserMessage = () => {
@@ -113,7 +52,7 @@ export default function ChatContainer({
         <div className="mx-auto w-full max-w-screen-lg">
           <div className="flex-fill flex w-full items-center">
             <div>
-              {status === "streaming" && (
+              {(status === "streaming" || status === "submitted") && (
                 <div className="flex items-center justify-center gap-2">
                   <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500"></div>
                   <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-200"></div>
@@ -126,16 +65,8 @@ export default function ChatContainer({
               <ScrollToBottomButton status={status} messages={messages} scrollContainerRef={scrollContainerRef} />
             </div>
           </div>
-          <UserPromptForm
-            input={input}
-            handleSubmit={handleSubmit}
-            status={status}
-            stop={stop}
-            handleChange={handleInputChange}
-            chatId={id}
-            error={error}
-            reload={reload}
-          />
+
+          <UserPromptForm />
         </div>
       </div>
     </>

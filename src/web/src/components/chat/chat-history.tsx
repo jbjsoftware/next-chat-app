@@ -1,10 +1,15 @@
 "use client";
 
+import { memo, useState } from "react";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { memo, useState } from "react";
+import { MoreHorizontal, Trash } from "lucide-react";
+import { toast } from "sonner";
 
+import { useChatHistoryContext } from "@/contexts/chat-history-context";
+import { Chat } from "@/lib/db";
+import DeleteChatHistoryDialog from "./delete-chat-history-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,12 +25,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-import { MoreHorizontal, Trash } from "lucide-react";
-import { useChatContext } from "@/contexts/chat-context";
-import { Chat } from "@/lib/db";
-import { toast } from "sonner";
-import DeleteChatHistoryDialog from "./delete-chat-history-dialog";
 
 type GroupedChats = {
   today: Chat[];
@@ -85,7 +84,7 @@ export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
 });
 
 export function ChatHistory() {
-  const { chats, deleteChatById } = useChatContext();
+  const { chats, deleteChatById } = useChatHistoryContext();
 
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();

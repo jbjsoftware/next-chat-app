@@ -1,18 +1,18 @@
 "use client";
 
 import { startTransition, useMemo, useOptimistic, useState } from "react";
+import { CheckCircle, ChevronDown } from "lucide-react";
 
+import { chatModels } from "@/lib/ai/models";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { chatModels } from "@/lib/ai/models";
-import { cn } from "@/lib/utils";
-import { CheckCircle, ChevronDown } from "lucide-react";
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 
 export function ModelSelector({
   selectedModelId,
@@ -38,7 +38,7 @@ export function ModelSelector({
         className={cn("w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground", className)}
       >
         <Button variant="outline" className="md:h-[34px] md:px-2">
-          {selectedChatModel?.name}
+          <span>{selectedChatModel?.name}</span>
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>

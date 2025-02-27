@@ -1,4 +1,5 @@
 import ChatContainer from "@/components/chat/chat-container";
+import { ChatContextProvider } from "@/contexts/chat-context";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -16,5 +17,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     return redirect("/");
   }
 
-  return <ChatContainer id={id as string} selectedChatModel={modelIdFromCookie?.value ?? DEFAULT_CHAT_MODEL} />;
+  return (
+    <ChatContextProvider id={id as string} selectedChatModel={modelIdFromCookie?.value ?? DEFAULT_CHAT_MODEL}>
+      <ChatContainer />
+    </ChatContextProvider>
+  );
 }

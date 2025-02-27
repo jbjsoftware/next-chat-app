@@ -1,4 +1,3 @@
-import { Copy, CopyCheck } from "lucide-react";
 import React, { memo } from "react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
@@ -7,7 +6,9 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { materialLight, materialDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
+import { Copy, CopyCheck } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 function CodeCopyBtn({ children }: any) {
   const [copyOk, setCopyOk] = React.useState(false);
