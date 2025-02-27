@@ -1,3 +1,4 @@
+import { Message } from "ai";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -14,4 +15,9 @@ export async function generateTitle(content: string): Promise<string> {
     .slice(0, maxLength);
 
   return cleaned + (content.length > maxLength ? "..." : "");
+}
+
+export function getMostRecentUserMessage(messages: Array<Message>) {
+  const userMessages = messages.filter((message) => message.role === "user");
+  return userMessages.at(-1);
 }

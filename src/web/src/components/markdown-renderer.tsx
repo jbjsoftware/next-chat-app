@@ -4,10 +4,7 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  materialLight,
-  materialDark,
-} from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { materialLight, materialDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -27,12 +24,7 @@ function CodeCopyBtn({ children }: any) {
     }, 500);
   };
   return (
-    <Button
-      variant="outline"
-      className="z-1 flex cursor-pointer gap-2"
-      onClick={handleClick}
-      size="sm"
-    >
+    <Button variant="outline" className="z-1 flex cursor-pointer gap-2" onClick={handleClick} size="sm">
       {copyOk ? (
         <>
           <CopyCheck />
@@ -90,10 +82,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
           <header className="flex items-center justify-between border-b p-2">
             <span className="ps-1 text-xs text-muted-foreground">
               {node.children[0].properties?.className &&
-                node.children[0].properties?.className[0]?.replace(
-                  "language-",
-                  "",
-                )}
+                node.children[0].properties?.className[0]?.replace("language-", "")}
             </span>
             <CodeCopyBtn>{children?.props?.children}</CodeCopyBtn>
           </header>
@@ -105,20 +94,13 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
 
   return (
     <div className="w-full">
-      <ReactMarkdown
-        components={{ code, pre }}
-        rehypePlugins={rehypePlugins}
-        remarkPlugins={remarkPlugins}
-      >
+      <ReactMarkdown components={{ code, pre }} rehypePlugins={rehypePlugins} remarkPlugins={remarkPlugins}>
         {children}
       </ReactMarkdown>
     </div>
   );
 };
 
-const MarkdownRenderer = memo(
-  NonMemoizedMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
-);
+const MarkdownRenderer = memo(NonMemoizedMarkdown, (prevProps, nextProps) => prevProps.children === nextProps.children);
 
 export default MarkdownRenderer;

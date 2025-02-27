@@ -36,10 +36,7 @@ const dbPromise = openDB<ChatDB>("chat-app", 1, {
   },
 });
 
-export async function createChat(
-  id: string,
-  title = "New Chat",
-): Promise<Chat> {
+export async function createChat(id: string, title = "New Chat"): Promise<Chat> {
   const chat: Chat = {
     id,
     title,
@@ -57,10 +54,7 @@ export async function getChat(id: string): Promise<Chat | undefined> {
   return db.get("chats", id);
 }
 
-export async function updateChat(
-  id: string,
-  updates: Partial<Chat>,
-): Promise<void> {
+export async function updateChat(id: string, updates: Partial<Chat>): Promise<void> {
   const db = await dbPromise;
   const chat = await getChat(id);
   if (!chat) throw new Error("Chat not found");
@@ -81,10 +75,7 @@ export async function listChats(): Promise<Chat[]> {
   return db.getAllFromIndex("chats", "by-created");
 }
 
-export async function addMessageToChat(
-  chatId: string,
-  message: Omit<ChatMessage, "id">,
-): Promise<void> {
+export async function addMessageToChat(chatId: string, message: Omit<ChatMessage, "id">): Promise<void> {
   const chat = await getChat(chatId);
   if (!chat) throw new Error("Chat not found");
 

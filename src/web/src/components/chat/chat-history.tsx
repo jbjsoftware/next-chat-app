@@ -49,14 +49,8 @@ const PureChatItem = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} className="w-full">
-        <Link
-          href={`/chat/${chat.id}`}
-          onClick={() => setOpenMobile(false)}
-          className="text-clip"
-        >
-          <span className="block w-full overflow-hidden !text-clip">
-            {chat.title}
-          </span>
+        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)} className="text-clip">
+          <span className="block w-full overflow-hidden !text-clip">{chat.title}</span>
         </Link>
       </SidebarMenuButton>
 
@@ -175,9 +169,7 @@ export function ChatHistory() {
                   <>
                     {groupedChats.today.length > 0 && (
                       <>
-                        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Today
-                        </div>
+                        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">Today</div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
                             key={chat.id}
@@ -195,9 +187,7 @@ export function ChatHistory() {
 
                     {groupedChats.yesterday.length > 0 && (
                       <>
-                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Yesterday
-                        </div>
+                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">Yesterday</div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
                             key={chat.id}
@@ -215,9 +205,7 @@ export function ChatHistory() {
 
                     {groupedChats.lastWeek.length > 0 && (
                       <>
-                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Last 7 days
-                        </div>
+                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">Last 7 days</div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
                             key={chat.id}
@@ -235,9 +223,7 @@ export function ChatHistory() {
 
                     {groupedChats.lastMonth.length > 0 && (
                       <>
-                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Last 30 days
-                        </div>
+                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">Last 30 days</div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
                             key={chat.id}
@@ -255,9 +241,7 @@ export function ChatHistory() {
 
                     {groupedChats.older.length > 0 && (
                       <>
-                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Older
-                        </div>
+                        <div className="mt-6 px-2 py-1 text-xs text-sidebar-foreground/50">Older</div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem
                             key={chat.id}

@@ -2,12 +2,7 @@
 import { Cpu, Plus } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar";
 import { useChatContext } from "@/contexts/chat-context";
 import { ChatHistory } from "./chat/chat-history";
 import { useRouter } from "next/navigation";

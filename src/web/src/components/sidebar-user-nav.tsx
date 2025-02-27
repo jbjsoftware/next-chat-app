@@ -36,28 +36,19 @@ export function SidebarUserNav() {
                 </Avatar>
 
                 <div className="flex-fill truncate text-ellipsis">
-                  <span className="text-xs font-medium">
-                    {session?.user?.email}
-                  </span>
+                  <span className="text-xs font-medium">{session?.user?.email}</span>
                 </div>
               </div>
               <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            className="w-64"
-            align="start"
-            alignOffset={-8}
-            forceMount
-          >
+          <DropdownMenuContent className="w-64" align="start" alignOffset={-8} forceMount>
             <DropdownMenuItem asChild>
               <SignOut />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Preferences
-            </DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
                 <div className="bpr flex items-center justify-between gap-2 p-2">

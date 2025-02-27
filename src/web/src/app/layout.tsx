@@ -31,11 +31,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <main className="flex min-h-screen w-full flex-col">
-              {children}
-            </main>
+            <main className="flex min-h-screen w-full flex-col">{children}</main>
           </ThemeProvider>
-          <Toaster position="bottom-center" closeButton />
+          <Toaster position="top-center" closeButton />
         </SessionProvider>
       </body>
     </html>

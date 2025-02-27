@@ -8,14 +8,10 @@ export type MessageListProps = {
 };
 
 const UserMessage = ({ content }: { content: string }) => (
-  <Card className="ml-4 rounded-3xl rounded-br-xs px-4 py-2 md:ml-64">
-    {content}
-  </Card>
+  <Card className="ml-4 rounded-3xl rounded-br-xs px-4 py-2 md:ml-64">{content}</Card>
 );
 
-const AssistantMessage = ({ content }: { content: string }) => (
-  <MarkdownRenderer>{content}</MarkdownRenderer>
-);
+const AssistantMessage = ({ content }: { content: string }) => <MarkdownRenderer>{content}</MarkdownRenderer>;
 
 const MessageList = ({ messages }: MessageListProps) => {
   return (
@@ -23,10 +19,7 @@ const MessageList = ({ messages }: MessageListProps) => {
       {messages.map((message) => (
         <div
           key={message.id}
-          className={cn(
-            `flex flex-col gap-2`,
-            message.role === "user" ? "items-end" : "items-start",
-          )}
+          className={cn(`flex flex-col gap-2`, message.role === "user" ? "items-end" : "items-start")}
         >
           {message.role === "user" ? (
             <UserMessage content={message.content} />

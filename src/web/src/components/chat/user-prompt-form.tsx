@@ -19,11 +19,7 @@ const SubmitButton = ({ status }: { status: string }) => {
         variant="outline"
         disabled={status == "submitted"}
       >
-        {status == "submitted" ? (
-          <LoaderCircle className="animate-spin" />
-        ) : (
-          <ArrowUp />
-        )}
+        {status == "submitted" ? <LoaderCircle className="animate-spin" /> : <ArrowUp />}
       </Button>
     </div>
   );
@@ -34,12 +30,7 @@ const StopButton = ({ stop }: { stop: () => void }) => {
     <div className="flex space-x-2">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            onClick={stop}
-            className="h-10 w-10 cursor-pointer rounded-full"
-            type="button"
-            variant="default"
-          >
+          <Button onClick={stop} className="h-10 w-10 cursor-pointer rounded-full" type="button" variant="default">
             <Square className="bg-secondary text-secondary" />
           </Button>
         </TooltipTrigger>
@@ -51,18 +42,13 @@ const StopButton = ({ stop }: { stop: () => void }) => {
 
 export type UserPromptFormProps = {
   input: string;
-  handleSubmit: (
-    event: React.FormEvent<HTMLFormElement>,
-    options?: any,
-  ) => void;
+  handleSubmit: (event: React.FormEvent<HTMLFormElement>, options?: any) => void;
   status: string;
   stop: () => void;
   handleChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   chatId: string;
   error: Error | undefined;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
 };
 
 const UserPromptForm = ({
@@ -143,11 +129,7 @@ const UserPromptForm = ({
             </div>
           )}
 
-          {status === "streaming" ? (
-            <StopButton stop={stop} />
-          ) : (
-            <SubmitButton status={status} />
-          )}
+          {status === "streaming" ? <StopButton stop={stop} /> : <SubmitButton status={status} />}
         </CardFooter>
       </Card>
     </form>

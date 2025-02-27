@@ -1,31 +1,20 @@
-"use client";
 import ChatContainer from "@/components/chat/chat-container";
-import { Chat, getChat } from "@/lib/db";
-import { useParams, useRouter } from "next/navigation";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import React, { useEffect } from "react";
+import React from "react";
 
-export default function Page() {
-  const { id } = useParams();
-  const [chat, setChat] = React.useState<Chat | undefined>(undefined);
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const { id } = params;
 
-  const router = useRouter();
-
-  useEffect(() => {
-    async function fetchData() {
-      const chat = await getChat(id as string);
-      if (!chat) {
-        router.push("/");
-        return;
-      }
-      setChat(chat);
-    }
-    fetchData();
-  }, [id, router]);
+  const cookieStore = await cookies();
+  const modelIdFromCookie = cookieStore.get("chat-model");
 
   if (!id) {
-    return <div>Chat not found</div>;
+    return redirect("/");
   }
 
-  return <ChatContainer id={id as string} initialMessages={chat?.messages} />;
+  return <ChatContainer id={id as string} selectedChatModel={modelIdFromCookie?.value ?? DEFAULT_CHAT_MODEL} />;
 }

@@ -62,8 +62,7 @@ export default function ScrollToBottomButton({
   useEffect(() => {
     const handleScroll = () => {
       if (scrollContainerRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } =
-          scrollContainerRef.current;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
         setCanScrollDown(scrollTop + clientHeight < scrollHeight);
       }
     };
@@ -83,12 +82,7 @@ export default function ScrollToBottomButton({
   return (
     <>
       {canScrollDown && !isScrolling && (
-        <Button
-          variant="secondary"
-          size="icon"
-          className="rounded-full"
-          onClick={scrollToBottom}
-        >
+        <Button variant="secondary" size="icon" className="rounded-full" onClick={scrollToBottom}>
           <ChevronDown className="h-6 w-6" />
         </Button>
       )}

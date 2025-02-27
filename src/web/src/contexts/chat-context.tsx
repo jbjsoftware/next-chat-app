@@ -1,13 +1,7 @@
 "use client";
 
 import type React from "react";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { type Chat, createChat, listChats, deleteChat } from "@/lib/db";
 import { generateTitle } from "@/lib/utils";
 
@@ -83,7 +77,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
 export function useChatContext() {
   const context = useContext(ChatContext);
-  if (!context)
-    throw new Error("useChatContext must be used within a ChatProvider");
+  if (!context) throw new Error("useChatContext must be used within a ChatProvider");
   return context;
 }

@@ -26,8 +26,7 @@ export default function DeleteChatHistoryDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your chat
-            and remove it from our servers.
+            This action cannot be undone. This will permanently delete your chat and remove it from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
