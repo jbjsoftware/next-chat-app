@@ -4,12 +4,13 @@ import { memo, useState } from "react";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { MoreHorizontal, Trash } from "lucide-react";
+import { MoreHorizontal, Trash, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 import { useChatHistoryContext } from "@/contexts/chat-history-context";
 import { Chat } from "@/lib/db";
 import DeleteChatHistoryDialog from "./delete-chat-history-dialog";
+import RenameChatDialog from "./rename-chat-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,18 +39,20 @@ const PureChatItem = ({
   chat,
   isActive,
   onDelete,
+  onRename,
   setOpenMobile,
 }: {
   chat: Chat;
   isActive: boolean;
   onDelete: (chatId: string) => void;
+  onRename: (chatId: string, currentTitle: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem data-chat-id={chat.id}>
       <SidebarMenuButton asChild isActive={isActive} className="w-full">
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          <span className="block w-full overflow-hidden">{chat.title}</span>
+          <span className="chat-title block w-full overflow-hidden">{chat.title}</span>
         </Link>
       </SidebarMenuButton>
 
@@ -64,12 +67,16 @@ const PureChatItem = ({
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="bottom" align="end">
+        <DropdownMenuContent side="right" align="start">
+          <DropdownMenuItem className="cursor-pointer" onSelect={() => onRename(chat.id, chat.title)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            <span>Rename</span>
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
             onSelect={() => onDelete(chat.id)}
           >
-            <Trash />
+            <Trash className="mr-2 h-4 w-4" />
             <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -80,18 +87,24 @@ const PureChatItem = ({
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) return false;
+  if (prevProps.chat.title !== nextProps.chat.title) return false;
   return true;
 });
 
 export function ChatHistory() {
-  const { chats, deleteChatById } = useChatHistoryContext();
+  const { chats, deleteChatById, updateChatById, updateChatTitleOptimistic } = useChatHistoryContext();
 
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameTitle, setRenameTitle] = useState<string>("");
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+
   const router = useRouter();
+
   const handleDelete = async () => {
     const deletePromise = deleteChatById(deleteId!);
 
@@ -107,6 +120,24 @@ export function ChatHistory() {
 
     if (deleteId === id) {
       router.push("/");
+    }
+  };
+
+  const handleRename = async (newTitle: string) => {
+    if (renameId) {
+      // Update the UI immediately
+      updateChatTitleOptimistic(renameId, newTitle);
+
+      // Then update the database
+      const renamePromise = updateChatById(renameId, { title: newTitle });
+
+      toast.promise(renamePromise, {
+        loading: "Renaming chat...",
+        success: () => "Chat renamed successfully",
+        error: () => "Failed to rename chat",
+      });
+
+      setShowRenameDialog(false);
     }
   };
 
@@ -178,6 +209,11 @@ export function ChatHistory() {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
                             }}
+                            onRename={(chatId, currentTitle) => {
+                              setRenameId(chatId);
+                              setRenameTitle(currentTitle);
+                              setShowRenameDialog(true);
+                            }}
                             setOpenMobile={setOpenMobile}
                           />
                         ))}
@@ -195,6 +231,11 @@ export function ChatHistory() {
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
+                            }}
+                            onRename={(chatId, currentTitle) => {
+                              setRenameId(chatId);
+                              setRenameTitle(currentTitle);
+                              setShowRenameDialog(true);
                             }}
                             setOpenMobile={setOpenMobile}
                           />
@@ -214,6 +255,11 @@ export function ChatHistory() {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
                             }}
+                            onRename={(chatId, currentTitle) => {
+                              setRenameId(chatId);
+                              setRenameTitle(currentTitle);
+                              setShowRenameDialog(true);
+                            }}
                             setOpenMobile={setOpenMobile}
                           />
                         ))}
@@ -231,6 +277,11 @@ export function ChatHistory() {
                             onDelete={(chatId) => {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
+                            }}
+                            onRename={(chatId, currentTitle) => {
+                              setRenameId(chatId);
+                              setRenameTitle(currentTitle);
+                              setShowRenameDialog(true);
                             }}
                             setOpenMobile={setOpenMobile}
                           />
@@ -250,6 +301,11 @@ export function ChatHistory() {
                               setDeleteId(chatId);
                               setShowDeleteDialog(true);
                             }}
+                            onRename={(chatId, currentTitle) => {
+                              setRenameId(chatId);
+                              setRenameTitle(currentTitle);
+                              setShowRenameDialog(true);
+                            }}
                             setOpenMobile={setOpenMobile}
                           />
                         ))}
@@ -266,6 +322,13 @@ export function ChatHistory() {
         showDeleteDialog={showDeleteDialog}
         setShowDeleteDialog={setShowDeleteDialog}
         handleDelete={handleDelete}
+      />
+
+      <RenameChatDialog
+        showRenameDialog={showRenameDialog}
+        setShowRenameDialog={setShowRenameDialog}
+        currentTitle={renameTitle}
+        handleRename={handleRename}
       />
     </>
   );

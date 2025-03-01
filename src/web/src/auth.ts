@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 // Your own logic for dealing with plaintext password strings; be careful!
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.

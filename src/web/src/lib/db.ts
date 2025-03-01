@@ -19,12 +19,21 @@ interface ChatDB extends DBSchema {
   };
 }
 
-const dbPromise = openDB<ChatDB>("chat-app", 1, {
-  upgrade(db) {
-    const store = db.createObjectStore("chats", { keyPath: "id" });
-    store.createIndex("by-created", "createdAt");
-  },
-});
+function assertClientSide() {
+  if (typeof window === "undefined") {
+    throw new Error("Database operations can only be performed on the client side");
+  }
+}
+
+const getDB = () => {
+  assertClientSide();
+  return openDB<ChatDB>("chat-app", 1, {
+    upgrade(db) {
+      const store = db.createObjectStore("chats", { keyPath: "id" });
+      store.createIndex("by-created", "createdAt");
+    },
+  });
+};
 
 export async function createChat(id: string, title = "New Chat"): Promise<Chat> {
   const chat: Chat = {
@@ -34,18 +43,18 @@ export async function createChat(id: string, title = "New Chat"): Promise<Chat> 
     messages: [],
   };
 
-  const db = await dbPromise;
+  const db = await getDB();
   await db.add("chats", chat);
   return chat;
 }
 
 export async function getChat(id: string): Promise<Chat | undefined> {
-  const db = await dbPromise;
+  const db = await getDB();
   return db.get("chats", id);
 }
 
 export async function updateChat(id: string, updates: Partial<Chat>): Promise<void> {
-  const db = await dbPromise;
+  const db = await getDB();
   const chat = await getChat(id);
   if (!chat) throw new Error("Chat not found");
 
@@ -56,12 +65,12 @@ export async function updateChat(id: string, updates: Partial<Chat>): Promise<vo
 }
 
 export async function deleteChat(id: string): Promise<void> {
-  const db = await dbPromise;
+  const db = await getDB();
   await db.delete("chats", id);
 }
 
 export async function listChats(): Promise<Chat[]> {
-  const db = await dbPromise;
+  const db = await getDB();
   return db.getAllFromIndex("chats", "by-created");
 }
 
