@@ -68,7 +68,7 @@ const UserPromptForm = () => {
 
   return (
     <form
-      className="mx-auto flex w-full items-center"
+      className="mx-auto flex w-full flex-col items-center"
       onSubmit={(event) => {
         submitForm(event);
       }}
@@ -115,6 +115,12 @@ const UserPromptForm = () => {
           {status === "streaming" ? <StopButton stop={stop} /> : <SubmitButton status={status} />}
         </CardFooter>
       </Card>
+
+      <div className="w-full px-3">
+        <p className="pt-1 text-center text-xs font-extralight text-muted-foreground">
+          ChatBot isn&apos;t perfect. Please verify generated responses.
+        </p>
+      </div>
     </form>
   );
 };

@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.scss";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
+import { UserPreferencesProvider } from "@/contexts/user-preferences-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <main className="flex min-h-screen w-full flex-col">{children}</main>
+            <UserPreferencesProvider>
+              <main className="flex min-h-screen w-full flex-col">{children}</main>
+            </UserPreferencesProvider>
           </ThemeProvider>
           <Toaster position="top-center" closeButton />
         </SessionProvider>

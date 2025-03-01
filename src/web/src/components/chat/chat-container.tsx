@@ -6,6 +6,7 @@ import UserPromptForm from "@/components/chat/user-prompt-form";
 import { ChatHeader } from "@/components/chat/chat-header";
 import ScrollToBottomButton from "@/components/chat/scroll-to-bottom";
 import MessageList from "@/components/chat/message-list";
+import { useUserPreferencesContext } from "@/contexts/user-preferences-context";
 
 export const MessagesContainer = ({
   scrollContainerRef,
@@ -23,13 +24,13 @@ export const MessagesContainer = ({
 
 export default function ChatContainer() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
+  const { autoScroll } = useUserPreferencesContext();
   const { messages, status, selectedChatModel } = useChatContext();
 
   useEffect(() => {
     const scrollOnNewUserMessage = () => {
       if (scrollContainerRef.current) {
-        if (messages[messages.length - 1]?.role === "user") {
+        if (messages[messages.length - 1]?.role === "user" || autoScroll) {
           scrollContainerRef.current.scrollTo({
             top: scrollContainerRef.current.scrollHeight,
             behavior: "auto",
@@ -38,13 +39,13 @@ export default function ChatContainer() {
       }
     };
     scrollOnNewUserMessage();
-  }, [messages]);
+  }, [messages, autoScroll]);
 
   return (
     <>
       <ChatHeader selectedModelId={selectedChatModel} />
 
-      <div className="flex-fill grid grid-rows-[1fr_auto] gap-4 overflow-auto py-4">
+      <div className="flex-fill grid grid-rows-[1fr_auto] gap-4 overflow-auto px-8 pt-3 pb-2">
         <MessagesContainer scrollContainerRef={scrollContainerRef}>
           <MessageList messages={messages} />
         </MessagesContainer>
@@ -53,7 +54,7 @@ export default function ChatContainer() {
           <div className="flex-fill flex w-full items-center">
             <div>
               {(status === "streaming" || status === "submitted") && (
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500"></div>
                   <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-200"></div>
                   <div className="h-3 w-3 animate-bounce rounded-full bg-blue-500 delay-400"></div>

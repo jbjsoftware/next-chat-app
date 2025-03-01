@@ -48,8 +48,8 @@ const PureChatItem = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive} className="w-full">
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)} className="text-clip">
-          <span className="block w-full overflow-hidden !text-clip">{chat.title}</span>
+        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+          <span className="block w-full overflow-hidden">{chat.title}</span>
         </Link>
       </SidebarMenuButton>
 
@@ -114,7 +114,7 @@ export function ChatHistory() {
     return (
       <SidebarGroup>
         <SidebarGroupContent>
-          <div className="flex w-full flex-row items-center justify-center gap-2 px-2 text-sm text-zinc-500">
+          <div className="flex w-full flex-row items-center justify-center gap-2 px-2 text-sm text-wrap text-zinc-500">
             Your conversations will appear here once you start chatting!
           </div>
         </SidebarGroupContent>

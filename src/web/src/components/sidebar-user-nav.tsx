@@ -17,6 +17,9 @@ import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SignOut } from "./auth/signout-button";
 import { Button } from "@/components/ui/button";
+import { useUserPreferencesContext } from "@/contexts/user-preferences-context";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
 
 const UserMenuTrigger = () => {
   const { data: session } = useSession();
@@ -87,6 +90,28 @@ const ThemeRadioGroup = () => {
   );
 };
 
+const AutoScrollOnNewMessage = () => {
+  const { autoScroll, setAutoScroll } = useUserPreferencesContext();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <div className="flex w-full items-center justify-between gap-2">
+              <span className="text-sm">Auto scroll</span>
+              <Switch checked={autoScroll} onCheckedChange={setAutoScroll} />
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </TooltipTrigger>
+      <TooltipContent side="right" align="start">
+        <span className="text-xs">Auto scroll when new messages are generated</span>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
 export function SidebarUserNav() {
   return (
     <SidebarMenu>
@@ -94,13 +119,14 @@ export function SidebarUserNav() {
         <DropdownMenu>
           <UserMenuTrigger />
 
-          <DropdownMenuContent className="w-64" align="start" alignOffset={-8} forceMount>
+          <DropdownMenuContent className="w-60 bg-card py-2" forceMount>
             <DropdownMenuItem asChild>
               <SignOut />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">Preferences</DropdownMenuLabel>
             <ThemeRadioGroup />
+            <AutoScrollOnNewMessage />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

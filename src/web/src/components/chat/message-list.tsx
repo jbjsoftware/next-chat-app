@@ -14,7 +14,7 @@ const AssistantMessage = ({ content }: { content: string }) => <MarkdownRenderer
 
 const MessageList = ({ messages }: MessageListProps) => {
   return (
-    <div className="flex-fill flex flex-col gap-8">
+    <div className="flex-fill flex flex-col gap-4.5">
       {messages.map((message) => (
         <AnimatePresence key={message.id}>
           <motion.div
