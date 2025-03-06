@@ -7,6 +7,14 @@ import { toast } from "sonner";
 import { addMessageToChat, getChat } from "@/lib/db";
 import { useParams, useRouter } from "next/navigation";
 import { useChatHistoryContext } from "./chat-history-context";
+import { Attachment } from "@/components/chat/attachment-preview";
+
+// Extend the Message type to include attachments
+declare module "@ai-sdk/ui-utils" {
+  interface Message {
+    attachments?: Attachment[];
+  }
+}
 
 interface ChatContextProps {
   id: string;
@@ -21,6 +29,8 @@ interface ChatContextProps {
   reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   error: Error | undefined;
+  attachments: Attachment[];
+  setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -31,14 +41,18 @@ export const ChatContextProvider: React.FC<{ id: string; selectedChatModel: stri
   children,
 }) => {
   const { updateChatById } = useChatHistoryContext();
-
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [initialMessages, setInitialMessages] = useState<Message[] | undefined>(undefined);
   const { id: chatIdParam } = useParams();
   const router = useRouter();
 
   const { messages, setMessages, input, handleInputChange, stop, status, reload, handleSubmit, error } = useChat({
     id: id,
-    body: { id, selectedChatModel: selectedChatModel },
+    body: {
+      id,
+      selectedChatModel: selectedChatModel,
+      attachments,
+    },
     initialMessages,
     onError: (apiError) => apiErrorHandler(apiError),
     onFinish: async (message) => {
@@ -91,6 +105,8 @@ export const ChatContextProvider: React.FC<{ id: string; selectedChatModel: stri
         reload,
         handleSubmit,
         error,
+        attachments,
+        setAttachments,
       }}
     >
       {children}
@@ -100,30 +116,21 @@ export const ChatContextProvider: React.FC<{ id: string; selectedChatModel: stri
 
 export const useChatContext = () => {
   const context = useContext(ChatContext);
-  if (!context) {
-    throw new Error("useChatContext must be used within a ChatProvider");
+  if (context === undefined) {
+    throw new Error("useChatContext must be used within a ChatContextProvider");
   }
   return context;
 };
 
 const apiErrorHandler = (apiError: Error) => {
-  console.log("An error occurred:", apiError);
+  console.error(apiError);
+
   const errorMessage = () => {
-    try {
-      return JSON.parse(apiError?.message ?? '{ message: "" }').message;
-    } catch {
-      return apiError?.message || "An unknown error occurred";
+    if (apiError.message) {
+      return apiError.message;
     }
+    return "An error occurred while sending your message";
   };
 
-  toast(`An error occured`, {
-    description: errorMessage(),
-    // duration: Infinity,
-    // action: {
-    //   label: "Retry",
-    //   onClick: () => {
-    //     reload();
-    //   },
-    // },
-  });
+  toast.error(errorMessage());
 };

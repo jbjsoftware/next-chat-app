@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import MarkdownRenderer from "@/components/markdown-renderer";
 import { cn } from "@/lib/utils";
 import MessageUser from "./message-user";
+import { AttachmentCards } from "./attachments";
 
 export type MessageListProps = {
   messages: Message[];
@@ -30,7 +31,14 @@ const MessageList = ({ messages }: MessageListProps) => {
               {message.role === "user" ? (
                 <MessageUser message={message} />
               ) : (
-                <AssistantMessage content={message.content} />
+                <>
+                  {message.attachments && message.attachments.length > 0 && (
+                    <div className="mb-1 ml-4 md:ml-12">
+                      <AttachmentCards attachments={message.attachments} isUserMessage={false} />
+                    </div>
+                  )}
+                  <AssistantMessage content={message.content} />
+                </>
               )}
             </div>
           </motion.div>

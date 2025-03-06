@@ -6,6 +6,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MessageEditor } from "./message-editor";
+import { AttachmentCards } from "./attachments";
 
 export type UserMessageProps = {
   message: Message;
@@ -35,6 +36,12 @@ export default function UserMessage({ message }: UserMessageProps) {
     <>
       {mode === "view" && (
         <div className="ml-4 flex flex-col items-end gap-1 md:ml-64">
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mb-1">
+              <AttachmentCards attachments={message.attachments} isUserMessage={true} />
+            </div>
+          )}
+
           <Card className="rounded-3xl rounded-br-xs px-4 py-2">{message.content}</Card>
 
           <div className="mr-2 flex flex-row gap-2 opacity-0 group-hover/message:opacity-100">

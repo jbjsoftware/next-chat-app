@@ -1,8 +1,9 @@
 "use client";
 
-import React, { ChangeEvent } from "react";
-import { ArrowUp, LoaderCircle, RefreshCcw, Square } from "lucide-react";
+import React, { ChangeEvent, useRef, useState } from "react";
+import { ArrowUp, LoaderCircle, PaperclipIcon, RefreshCcw, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { nanoid } from "nanoid";
 
 import { addMessageToChat, getChat } from "@/lib/db";
 import { useChatContext } from "@/contexts/chat-context";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AutosizeTextarea, AutosizeTextAreaRef } from "@/components/ui/autosize-textarea";
+import { AttachmentPreview, Attachment } from "./attachments";
 
 const SubmitButton = ({ status }: { status: string }) => {
   return (
@@ -44,11 +46,54 @@ const StopButton = ({ stop }: { stop: () => void }) => {
 
 const UserPromptForm = () => {
   const textareaRef = React.useRef<AutosizeTextAreaRef>(null);
-  const { input, handleInputChange, stop, status, reload, handleSubmit, error, id } = useChatContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { input, handleInputChange, stop, status, reload, handleSubmit, error, id, setAttachments } = useChatContext();
+  const [localAttachments, setLocalAttachments] = useState<Attachment[]>([]);
 
   const router = useRouter();
 
   const { saveNewChat } = useChatHistoryContext();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments: Attachment[] = [];
+
+    Array.from(files).forEach((file) => {
+      const fileId = nanoid();
+      const url = URL.createObjectURL(file);
+      const fileType = file.type.startsWith("image/") ? "image" : file.type.startsWith("text/") ? "text" : "other";
+
+      newAttachments.push({
+        id: fileId,
+        name: file.name,
+        type: fileType,
+        url: url,
+      });
+
+      // For text files, read the content
+      if (fileType === "text") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          setLocalAttachments((prev) => prev.map((att) => (att.id === fileId ? { ...att, content } : att)));
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    setLocalAttachments((prev) => [...prev, ...newAttachments]);
+
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setLocalAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
 
   const submitForm = async (event: React.FormEvent<HTMLFormElement>) => {
     const chat = await getChat(id);
@@ -58,10 +103,17 @@ const UserPromptForm = () => {
       router.push(`/chat/${id}`);
     }
 
+    // Update the attachments in the chat context
+    setAttachments(localAttachments);
+
     await addMessageToChat(id, {
       content: input,
       role: "user",
+      attachments: localAttachments,
     });
+
+    // Reset attachments after sending
+    setLocalAttachments([]);
 
     handleSubmit(event);
   };
@@ -76,7 +128,12 @@ const UserPromptForm = () => {
         textareaRef.current?.textArea?.focus();
       }}
     >
-      <Card className="flex-fill flex w-full cursor-text gap-2 hover:border-card-foreground">
+      <Card className="flex-fill flex w-full cursor-text flex-col gap-2 hover:border-card-foreground">
+        {localAttachments.length > 0 && (
+          <div className="px-3 pt-3">
+            <AttachmentPreview attachments={localAttachments} onRemove={removeAttachment} />
+          </div>
+        )}
         <CardContent className="mt-3 flex flex-col pb-0">
           <AutosizeTextarea
             ref={textareaRef}
@@ -97,7 +154,31 @@ const UserPromptForm = () => {
           />
         </CardContent>
         <CardFooter className="flex justify-between pb-3">
-          <div className="flex space-x-2"></div>
+          <div className="flex space-x-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <PaperclipIcon className="h-5 w-5" />
+                  <span className="sr-only">Attach file</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Attach file</TooltipContent>
+            </Tooltip>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              multiple
+              onChange={handleFileChange}
+              accept="image/*,text/*"
+            />
+          </div>
 
           {error && (
             <div className="flex justify-end">

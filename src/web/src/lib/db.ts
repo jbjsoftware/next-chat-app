@@ -1,6 +1,14 @@
 import { Message } from "ai";
 import { openDB, type DBSchema } from "idb";
 import { nanoid } from "nanoid";
+import { Attachment } from "@/components/chat/attachment-preview";
+
+// Extend the Message type to include attachments
+declare module "ai" {
+  interface Message {
+    attachments?: Attachment[];
+  }
+}
 
 export type Chat = {
   id: string;
